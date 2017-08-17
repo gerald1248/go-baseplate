@@ -16,6 +16,24 @@
             <small class="text-muted">generic template for Golang applications</small>
         </p>
     </div>
+
+
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">Data</h4>
+            </div>
+            <div>
+                <div>
+                    <input type='text' class='form-control' maxlength='2000' id='data' placeholder='{ "key": "value" }'></input>
+                    <button id="post-button" type="button" class="btn btn-default" data-clipboard-action="copy" data-clipboard-target="#data">Post</button>
+                    <span id="error"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="report"></div>
+
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/bundle-min.js"></script>
