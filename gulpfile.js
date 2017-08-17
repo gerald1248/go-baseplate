@@ -36,6 +36,7 @@ gulp.task('build', function(callback) {
     'clean-build',
     'fmt',
     'vet',
+    'copy-fonts',
     'build-js',
     'build-css',
     'build-html',
@@ -58,7 +59,7 @@ gulp.task('build-all', function(callback) {
 });
 
 gulp.task('build-js', function() {
-  return gulp.src(['./src/js/*.js'])
+  return gulp.src(['./src/js/jquery.min.js', './src/js/bootstrap.min.js', './src/js/main.js'])
     .pipe(sourcemaps.init())
     .pipe(concat('bundle.js'))
     .pipe(minify().on('error', util.log))
@@ -77,6 +78,11 @@ gulp.task('build-html', function() {
   return gulp.src(['./src/index.html'])
     .pipe(htmlmin({collapseWhitespace: true}))
     .pipe(gulp.dest('./static'));
+});
+
+gulp.task('copy-fonts', function() {
+  return gulp.src(['./src/fonts/*'])
+    .pipe(gulp.dest('./static/fonts'))
 });
 
 gulp.task('build-go', function(callback) {
@@ -188,6 +194,7 @@ gulp.task('build-win32', function(callback) {
 		//skip clean-build to retain dist
     'fmt',
     'vet',
+    'copy-fonts',
     'build-js',
     'build-css',
     'build-html',
@@ -206,6 +213,7 @@ gulp.task('build-linux', function(callback) {
 		//skip clean-build to retain dist
     'fmt',
     'vet',
+    'copy-fonts',
     'build-js',
     'build-css',
     'build-html',
@@ -224,6 +232,7 @@ gulp.task('build-darwin', function(callback) {
 		//skip clean-build to retain dist
     'fmt',
     'vet',
+    'copy-fonts',
     'build-js',
     'build-css',
     'build-html',
