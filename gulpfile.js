@@ -28,6 +28,7 @@ if (platform === "linux") {
 var arch = os.arch()
 var race = false;
 var raceSwitch = (race) ? " -race" : "";
+var xbuildtarget = "";
 
 gulp.task('default', ['build', 'watch']);
 
@@ -124,7 +125,7 @@ gulp.task('build-go-linux-x64', function(callback) {
 });
 
 gulp.task('package-binary', function() {
-  return gulp.src(['./go-baseplate', './go-baseplate.exe'], { base: '.' })
+  return gulp.src(['./' + pkg.name, './' + pkg.name + '.exe'], { base: '.' })
     .pipe(gulp.dest('package'))
 });
 
@@ -165,7 +166,7 @@ gulp.task('clean-dist', function() {
 });
 
 gulp.task('clean-home', function() {
-  return del.sync(['./main', './main.exe'], { force: true });
+  return del.sync(['./' + pkg.name, './' + pkg.name + '.exe'], { force: true });
 });
 
 gulp.task('clean-build', function() {
@@ -190,44 +191,27 @@ gulp.task('build-bindata', function(callback) {
 });
 
 gulp.task('build-win32', function(callback) {
+  xbuildtarget = 'win32';
   runSequence(
-		//skip clean-build to retain dist
-    'fmt',
-    'vet',
-    'copy-fonts',
-    'build-js',
-    'build-css',
-    'build-html',
-    'build-bindata',
-    'build-go-win32',
-    'clean-package',
-    'package-binary',
-    'dist',
-    'clean-home',
-		//skip tests as binary won't run
+    'build-any',
     callback);
 });
 		
 gulp.task('build-linux', function(callback) {
+  xbuildtarget = 'linux-x64';
   runSequence(
-		//skip clean-build to retain dist
-    'fmt',
-    'vet',
-    'copy-fonts',
-    'build-js',
-    'build-css',
-    'build-html',
-    'build-bindata',
-    'build-go-linux-x64',
-    'clean-package',
-    'package-binary',
-    'dist',
-    'clean-home',
-		//skip tests as binary won't run
+    'build-any',
     callback);
 });
 		
 gulp.task('build-darwin', function(callback) {
+  xbuildtarget = 'darwin';
+  runSequence(
+    'build-any',
+    callback);
+});
+
+gulp.task('build-any', function(callback) {
   runSequence(
 		//skip clean-build to retain dist
     'fmt',
@@ -237,12 +221,12 @@ gulp.task('build-darwin', function(callback) {
     'build-css',
     'build-html',
     'build-bindata',
-    'build-go-darwin',
+    'build-go-' + xbuildtarget,
     'clean-package',
     'package-binary',
     'dist',
     'clean-home',
-		//skip tests as binary won't run
+    'test',
     callback);
 });
 
