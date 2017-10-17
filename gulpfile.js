@@ -29,26 +29,17 @@ var arch = os.arch()
 var race = false;
 var raceSwitch = (race) ? " -race" : "";
 var xbuildtarget = "";
+var appName = pkg.name;
+var appVersion = pkg.version;
 
 gulp.task('default', ['build', 'watch']);
 
 gulp.task('build', function(callback) {
-  runSequence(
-    'clean-build',
-    'fmt',
-    'vet',
-    'copy-fonts',
-    'build-js',
-    'build-css',
-    'build-html',
-    'build-bindata',
-    'build-go',
-    'package-binary',
-    'dist',
-    'clean-home',
-    'test',
-    callback);
-});
+	xbuildtarget = 'default';
+	runSequence(
+		'build-any',
+		callback);
+});	
 
 gulp.task('build-all', function(callback) {
 	runSequence(
@@ -87,7 +78,7 @@ gulp.task('copy-fonts', function() {
 });
 
 gulp.task('build-go', function(callback) {
-  exec('go build' + raceSwitch, function(err, stdout, stderr) {
+  exec('go build' + raceSwitch + ' -o ' + appName, function(err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
     callback(err);
@@ -97,7 +88,7 @@ gulp.task('build-go', function(callback) {
 gulp.task('build-go-darwin', function(callback) {
 	platform = "darwin"
 	arch = "amd64"
-	exec('GOOS=darwin GOARCH=amd64 go build' + raceSwitch, function(err, stdout, stderr) {
+	exec('GOOS=darwin GOARCH=amd64 go build' + raceSwitch + ' -o ' + appName, function(err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
     callback(err);
@@ -107,7 +98,7 @@ gulp.task('build-go-darwin', function(callback) {
 gulp.task('build-go-win32', function(callback) {
 	platform = "win32"
 	arch = "386"
-	exec('GOOS=windows GOARCH=386 go build' + raceSwitch, function(err, stdout, stderr) {
+	exec('GOOS=windows GOARCH=386 go build' + raceSwitch + ' -o ' + appName + '.exe', function(err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
     callback(err);
@@ -117,7 +108,7 @@ gulp.task('build-go-win32', function(callback) {
 gulp.task('build-go-linux-x64', function(callback) {
 	platform = "linux"
 	arch = "x64"
-	exec('GOOS=linux GOARCH=amd64 go build' + raceSwitch, function(err, stdout, stderr) {
+	exec('GOOS=linux GOARCH=amd64 go build' + raceSwitch + ' -o ' + appName, function(err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
     callback(err);
@@ -125,19 +116,19 @@ gulp.task('build-go-linux-x64', function(callback) {
 });
 
 gulp.task('package-binary', function() {
-  return gulp.src(['./' + pkg.name, './' + pkg.name + '.exe'], { base: '.' })
+  return gulp.src(['./' + appName, './' + appName + '.exe'], { base: '.' })
     .pipe(gulp.dest('package'))
 });
 
 gulp.task('dist', function() {
   return gulp.src('./package/**/*', { base: './package' })
-    .pipe(zip(pkg.name + '-' + pkg.version + '-' + platform + '-' + arch + '.zip'))
+    .pipe(zip(appName + '-' + pkg.version + '-' + platform + '-' + arch + '.zip'))
     .pipe(md5())
     .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('test', function(callback) {
-  exec('go test', function(err, stdout, stderr) {
+  exec('go test -v', function(err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
     callback(err);
@@ -166,13 +157,13 @@ gulp.task('clean-dist', function() {
 });
 
 gulp.task('clean-home', function() {
-  return del.sync(['./' + pkg.name, './' + pkg.name + '.exe'], { force: true });
+  return del.sync(['./' + appName, './' + appName + '.exe'], { force: true });
 });
 
 gulp.task('clean-build', function() {
   return del.sync([
-    './dist/' + pkg.name + '-*-' + platform + '_*.zip',
-    './dist/' + pkg.name + '-*-' + platform + '-' + arch + '_*.zip',
+    './dist/' + appName + '-*-' + platform + '_*.zip',
+    './dist/' + appName + '-*-' + platform + '-' + arch + '_*.zip',
     './package/**/*',
     './static/**/*'
   ], { force: true });
@@ -211,6 +202,14 @@ gulp.task('build-darwin', function(callback) {
     callback);
 });
 
+gulp.task('build-go-default', function(callback) {
+  exec('go build' + raceSwitch, function(err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    callback(err);
+  });
+});
+
 gulp.task('build-any', function(callback) {
   runSequence(
 		//skip clean-build to retain dist
@@ -228,6 +227,47 @@ gulp.task('build-any', function(callback) {
     'clean-home',
     'test',
     callback);
+});
+
+gulp.task('build-docker', function(callback) {
+  runSequence(
+    'build-linux',
+    'build-image',
+    'run-image',
+    callback
+  );
+});
+
+gulp.task('build-image', function(callback) {
+    exec(
+      'docker build -t ' +
+      appName +
+      ':v' +
+      appVersion +
+      ' .' +
+      ' && echo \"Run as follows:\n$ docker run --read-only -p 8443:8443 -t ' +
+      appName +
+      ':v' +
+      appVersion +
+      '\"', function(err, stdout, stderr) {
+      console.log(stdout);
+      console.log(stderr);
+      callback(err);
+    });
+});
+
+gulp.task('run-image', function(callback) {
+  exec(
+    'docker run --read-only -p 8443:8443 -t ' +
+    appName +
+    ':v' +
+    appVersion +
+    ' --help',
+    function(err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    callback(err);
+  })
 });
 
 gulp.task('watch', function() {
