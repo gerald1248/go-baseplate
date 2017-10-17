@@ -1,5 +1,5 @@
 # go-baseplate
-generic template for Golang applications
+This is a generic template for Golang applications. After cloning, you can change its name by entering a new project name in `package.json` and `Dockerfile`.
 
 This template does next to nothing - it echoes back any JSON it receives -  but it sets up a number of facilities that are useful as you start to add functionality.
 
@@ -20,3 +20,23 @@ The `gulp` build process goes through the usual steps of:
 * reformatting/analysing/testing
 
 * minifying/uglifying/concatenating the web components
+
+To build a minimal (`FROM scratch`) Docker image, run `gulp build-docker`.
+
+To build the application, enter the following:
+
+```
+$ export GOPATH=$HOME/go
+$ go get -u github.com/jteeuwen/go-bindata/...
+$ go get -u
+$ npm install
+$ node_modules/gulp/bin/gulp build
+```
+
+Docker
+------
+`openshift-linter` is intended to run on `FROM scratch` Docker containers. To trigger a Linux build, build the image and run it, enter:
+```
+$ node_modules/gulp/bin/gulp  build-docker
+```
+If you'd rather use an existing image, you may wish to run `docker pull gerald1248/go-baseplate:latest`.

@@ -1,7 +1,7 @@
 {
   "name": "go-baseplate",
-  "version": "0.1.0",
-  "description": "basic linter for OpenShift configuration objects",
+  "version": "0.1.1",
+  "description": "Golang application template",
   "main": "main.go",
   "scripts": {
     "test": "gulp test"
